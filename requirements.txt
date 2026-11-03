@@ -1,0 +1,126 @@
+pandas==2.3.3
+numpy==2.4.6  # numba (a shap dependency) caps numpy<2.5; don't bump past 2.4.x without checking shap/numba
+requests==2.34.2
+
+# LLM provider SDKs
+openai==2.44.0
+tiktoken==0.9.0  # OpenAI tokenizer, used by 14_advanced/03_llm_examples/tiktoken_tokenization_example.py
+ollama==0.6.2
+google-generativeai==0.8.6
+cohere==7.0.5
+boto3==1.43.40
+
+# Agent frameworks
+openai-agents==0.17.7
+crewai==0.203.2
+autogen-agentchat==0.7.5
+autogen-ext[openai]==0.7.5
+autogen-ext[anthropic]==0.7.5
+google-adk==2.3.0
+phidata==2.7.10
+
+# Guardrails
+nemoguardrails==0.24.0  # NVIDIA NeMo Guardrails, used by 14_advanced/16_guardrails; bumps click to 8.5.0
+presidio-analyzer==2.2.364  # Microsoft Presidio, used by 14_advanced/16_guardrails/16_3_presidio.py; also needs `python -m spacy download en_core_web_lg` once (not a pip dependency)
+presidio-anonymizer==2.2.364
+
+# LangChain / LangGraph ecosystem (pinned to the pre-1.0 line since the
+# repo's scripts use the 0.x APIs; langchain-core>=1.0 breaks them)
+langchain==0.3.30
+langchain-core==0.3.86
+langchain-community==0.3.31
+beautifulsoup4==4.15.0  # required by WebBaseLoader (14_advanced/05_langchain/document_loaders.py)
+langchain-experimental==0.3.4  # for SemanticChunker; 0.4.x+ forces langchain-core>=1.0, breaking the pre-1.0 pin above
+langsmith==0.9.7  # for @traceable/Client (14_advanced/05_langchain/langsmith_tracing.py)
+langchain-openai==0.3.35
+langchain-huggingface==0.3.1
+langchain-text-splitters==0.3.11
+langchain-aws==0.2.35
+langchain-chroma==0.2.6
+langchain-ollama==0.3.10
+langchain-tavily==0.2.17
+tavily-python==0.7.26
+google-search-results==2.4.2  # SerpApi client, used for real Google Flights data (14_advanced/08_langgraph_cycles_HIL_persistence/parallel_trip_planner_send_api.py)
+langgraph==0.6.11
+langgraph-checkpoint==3.0.1  # must stay <4.0.0 for langgraph 0.6.11 compat, and >=3.0.1 for langgraph-cli[inmem]'s langgraph-api (Studio dev server) to run at all
+langgraph-checkpoint-sqlite==3.0.3  # matching 3.x line; langgraph-checkpoint-sqlite 2.0.11 called JsonPlusSerializer.dumps(), removed in langgraph-checkpoint 3.x
+langgraph-checkpoint-redis==0.3.0  # pinned below 0.4.x/0.5.x, which pull in langgraph-checkpoint 4.x and break the langgraph-checkpoint==3.0.1 pin above; needs a RediSearch-capable server (e.g. redis/redis-stack-server), not plain redis, for 14_advanced/08_langgraph_cycles_HIL_persistence/redis_checkpointing_production.py
+langserve==0.3.3
+langfuse==4.13.0
+langchain-google-genai==2.0.8  # pinned below latest (like langchain-core) since 2.1.x+ needs google-ai-generativelanguage>=0.7, which conflicts with google-generativeai==0.8.6's hard pin of 0.6.15; 3.0.0+ needs langchain-core>=1.0
+
+# Observability / tracing
+opentelemetry-api==1.42.1  # used by 14_advanced/17_Monitoring_Evaluation_and_Fine_Tuning/17_1_opentelemetry_langgraph.py
+opentelemetry-sdk==1.42.1
+opentelemetry-exporter-otlp-proto-http==1.42.1  # OTLP/HTTP exporter, used by 14_advanced/17_Monitoring_Evaluation_and_Fine_Tuning/17_2_jaeger_trace_waterfall.py to ship spans to a local Jaeger container
+prometheus-client==0.21.1  # used by 14_advanced/17_Monitoring_Evaluation_and_Fine_Tuning/17_3_prometheus_metrics_agent.py to expose a /metrics endpoint for a local Prometheus container to scrape
+
+# MCP
+mcp==1.28.1
+fastmcp==3.4.4
+langchain-mcp-adapters==0.1.9  # pinned below 0.2.0, which imports langchain_core.messages.content - added in a langchain-core line newer than the langchain-core==0.3.86 pin above; used by 6_mcp/6_21_langchain_agent_mcp_tools.py
+mcp-server-sqlite==2025.4.25  # official reference SQLite MCP server, used by 6_mcp/6_13
+
+# Vector stores / retrieval / embeddings
+chromadb==1.1.1  # crewai hard-pins json-repair==0.25.2 which forces chromadb~=1.1.0; don't bump without checking crewai
+faiss-cpu==1.14.3
+qdrant-client==1.18.0
+pinecone==9.1.0
+sentence-transformers==5.6.0
+rank-bm25==0.2.2  # sparse/keyword retriever used by 14_advanced/14_agentic_rag_graph_rag/14_9_hybrid_search.py
+llama-index==0.14.23
+llama-index-vector-stores-chroma==0.5.5
+umap-learn==0.5.12
+
+# RAG evaluation
+ragas==0.4.3  # used by 15_real/ragas_evaluation.py and 14_advanced/14_agentic_rag_graph_rag/14_1_ragas_evaluation.py
+deepeval==4.1.5  # used by 15_real/deepeval_evaluation.py
+# KNOWN CONFLICT: deepeval==4.1.5 requires posthog>=7.0.0,<8.0.0 but chromadb==1.1.1 above
+# requires posthog>=2.4.0,<6.0.0 - genuinely incompatible ranges, not a resolver quirk.
+# `uv pip install -r requirements.txt` (or a from-scratch `pip install -r requirements.txt`
+# with a strict resolver) will fail on this outright. Working fix: install this file with
+# the deepeval line removed first (resolves cleanly), then install deepeval on its own with
+# `--no-deps` (e.g. `uv pip install deepeval==4.1.5 --no-deps`) - deepeval doesn't hard-require
+# posthog at runtime, so this leaves chromadb's posthog constraint satisfied and deepeval
+# working anyway. BUT --no-deps also skips deepeval's other deps, and `import deepeval` then
+# fails (No module named 'sentry_sdk'), so add them afterwards (pure additions, bump no pins):
+#   uv pip install pyfiglet pytest pytest-asyncio pytest-repeat pytest-rerunfailures pytest-xdist "questionary>=2.0.0,<3.0.0" sentry-sdk "tabulate>=0.9.0,<0.10.0" wheel Do NOT try to fix this by bumping chromadb or downgrading deepeval without
+# checking the "don't bump chromadb" crewai note above.
+
+# Voice / audio
+sounddevice==0.5.5  # microphone capture, used by 15_real/voice_assistant_whisper_langchain.py ("mic" mode)
+soundfile==0.14.0  # WAV file I/O, used by the same script
+
+# Data / ML / explainability
+scikit-learn==1.9.0
+shap==0.52.0
+lime==0.2.0.1
+joblib==1.5.3
+matplotlib==3.11.0
+datasets==5.0.0
+peft==0.21.0  # LoRA adapters, used by 14_advanced/17_Monitoring_Evaluation_and_Fine_Tuning/17_4_lora_sentiment_finetuning.py
+accelerate==1.15.0  # required by transformers.Trainer, used by the same script
+yfinance==1.5.1
+
+# Document / file handling
+pypdf==6.14.2
+pdfplumber==0.11.10
+Pillow==12.3.0
+reportlab==5.0.0
+graphviz==0.21
+
+# Web frameworks
+flask==3.1.3
+fastapi==0.139.0
+uvicorn==0.50.0
+streamlit==1.63.0  # used by 12_project/12_2_banking_chatbot from step 3 onward
+
+# Google APIs (Sheets/OAuth demos)
+google-api-python-client==2.198.0
+google-auth==2.55.1
+
+# Utilities
+python-dotenv==1.2.2
+pydantic==2.13.4
+nest_asyncio==1.6.0
+ipinfo==5.6.0
